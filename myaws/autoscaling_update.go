@@ -1,6 +1,8 @@
 package myaws
 
 import (
+	"fmt"
+
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/pkg/errors"
 )
@@ -9,6 +11,7 @@ import (
 type AutoscalingUpdateOptions struct {
 	AsgName         string
 	DesiredCapacity int64
+	Wait            bool
 }
 
 // AutoscalingUpdate updates autoscaling group setting.
@@ -19,8 +22,16 @@ func (client *Client) AutoscalingUpdate(options AutoscalingUpdateOptions) error 
 		DesiredCapacity:      &options.DesiredCapacity,
 	}
 
-	if _, err := client.AutoScaling.SetDesiredCapacity(params); err != nil {
+	response, err := client.AutoScaling.SetDesiredCapacity(params)
+	if err != nil {
 		return errors.Wrap(err, "SetDesiredCapacity failed:")
+	}
+
+	fmt.Fprintln(client.stdout, response)
+
+	if options.Wait {
+		fmt.Fprintln(client.stdout, "Wait until the desired capacity instances are InService...")
+		return client.waitUntilAutoScalingGroupDesiredState(options.AsgName)
 	}
 
 	return nil

@@ -1,6 +1,8 @@
 package myaws
 
 import (
+	"fmt"
+
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/pkg/errors"
 )
@@ -10,6 +12,7 @@ type AutoscalingAttachOptions struct {
 	AsgName           string
 	InstanceIds       []*string
 	LoadBalancerNames []*string
+	Wait              bool
 }
 
 // AutoscalingAttach attaches instances or load balancers from autoscaling group.
@@ -26,6 +29,11 @@ func (client *Client) AutoscalingAttach(options AutoscalingAttachOptions) error 
 		}
 	}
 
+	if options.Wait {
+		fmt.Fprintln(client.stdout, "Wait until the desired capacity instances are InService...")
+		return client.waitUntilAutoScalingGroupDesiredState(options.AsgName)
+	}
+
 	return nil
 }
 
@@ -35,9 +43,12 @@ func (client *Client) autoscalingAttachInstances(asgName string, instanceIds []*
 		InstanceIds:          instanceIds,
 	}
 
-	if _, err := client.AutoScaling.AttachInstances(params); err != nil {
+	response, err := client.AutoScaling.AttachInstances(params)
+	if err != nil {
 		return errors.Wrap(err, "AttachInstances failed:")
 	}
+
+	fmt.Fprintln(client.stdout, response)
 
 	return nil
 }
@@ -48,9 +59,12 @@ func (client *Client) autoscalingAttachLoadBalancers(asgName string, loadBalance
 		LoadBalancerNames:    loadBalancerNames,
 	}
 
-	if _, err := client.AutoScaling.AttachLoadBalancers(params); err != nil {
+	response, err := client.AutoScaling.AttachLoadBalancers(params)
+	if err != nil {
 		return errors.Wrap(err, "AttachLoadBalancers failed:")
 	}
+
+	fmt.Fprintln(client.stdout, response)
 
 	return nil
 }
