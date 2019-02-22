@@ -16,7 +16,7 @@ import (
 func newConfig(profile string, region string) *aws.Config {
 	defaultConfig := defaults.Get().Config
 	cred := newCredentials(getenv(profile, "AWS_DEFAULT_PROFILE"), getenv(region, "AWS_DEFAULT_REGION"))
-	return defaultConfig.WithCredentials(cred).WithRegion(getenv(region, "AWS_DEFAULT_REGION"))
+	return defaultConfig.WithCredentials(cred).WithRegion(getenv(region, "AWS_DEFAULT_REGION")).WithLogLevel(aws.LogDebugWithHTTPBody | aws.LogDebugWithRequestRetries | aws.LogDebugWithRequestErrors)
 }
 
 func newCredentials(profile string, region string) *credentials.Credentials {
