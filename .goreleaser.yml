@@ -9,6 +9,9 @@ builds:
       - amd64
     ldflags:
       - "-s -w -X github.com/minamijoyo/myaws/cmd.Version={{.Version}} -X github.com/minamijoyo/myaws/cmd.Revision={{.ShortCommit}}"
+    hooks:
+      post:
+        - upx "{{ .Path }}"
 archive:
   name_template: "{{ .ProjectName }}_v{{ .Version }}_{{ .Os }}_{{ .Arch }}"
   files:
