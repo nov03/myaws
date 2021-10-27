@@ -2,6 +2,7 @@ package myaws
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -13,6 +14,7 @@ type EC2LsOptions struct {
 	Quiet     bool
 	FilterTag string
 	Fields    []string
+	Domain    []string
 }
 
 // EC2Ls describes EC2 instances.
@@ -47,18 +49,31 @@ func formatEC2Instance(client *Client, options EC2LsOptions, instance *ec2.Insta
 	}
 
 	output := []string{}
+	instance_name := ""
 
 	for _, field := range outputFields {
 		value := ""
+
 		if strings.Index(field, "Tag:") != -1 {
 			key := strings.Split(field, ":")[1]
 			value = formatEC2Tag(instance, key)
+			instance_name = value
 		} else {
 			value = formatFuncs[field](client, options, instance)
 		}
 		output = append(output, value)
 	}
-	return strings.Join(output[:], "\t")
+	if len(options.Domain) == 0 {
+		return strings.Join(output[:], "\t")
+	} else {
+		if regexp.MustCompile(options.Domain[0]).Match([]byte(instance_name)) {
+			return strings.Join(output[:], "\t")
+		} else {
+			output = nil
+			return strings.Join(output[:], "")
+		}
+	}
+
 }
 
 func formatEC2InstanceID(client *Client, options EC2LsOptions, instance *ec2.Instance) string {

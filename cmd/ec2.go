@@ -48,11 +48,12 @@ func newEC2LsCmd() *cobra.Command {
 		"Filter instances by tag, such as \"Name:app-production\". The value of tag is assumed to be a partial match",
 	)
 	flags.StringP("fields", "F", "InstanceId InstanceType PublicIpAddress PrivateIpAddress AvailabilityZone StateName LaunchTime Tag:Name", "Output fields list separated by space")
-
+	flags.StringP("domain", "D", "", "Please enter the domain you wish to search")
 	viper.BindPFlag("ec2.ls.all", flags.Lookup("all"))
 	viper.BindPFlag("ec2.ls.quiet", flags.Lookup("quiet"))
 	viper.BindPFlag("ec2.ls.filter-tag", flags.Lookup("filter-tag"))
 	viper.BindPFlag("ec2.ls.fields", flags.Lookup("fields"))
+	viper.BindPFlag("ec2.ls.domain", flags.Lookup("domain"))
 
 	return cmd
 }
@@ -68,6 +69,7 @@ func runEC2LsCmd(cmd *cobra.Command, args []string) error {
 		Quiet:     viper.GetBool("ec2.ls.quiet"),
 		FilterTag: viper.GetString("ec2.ls.filter-tag"),
 		Fields:    viper.GetStringSlice("ec2.ls.fields"),
+		Domain:    viper.GetStringSlice("ec2.ls.domain"),
 	}
 
 	return client.EC2Ls(options)
