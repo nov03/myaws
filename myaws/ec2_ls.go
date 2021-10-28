@@ -57,12 +57,18 @@ func formatEC2Instance(client *Client, options EC2LsOptions, instance *ec2.Insta
 		if strings.Index(field, "Tag:") != -1 {
 			key := strings.Split(field, ":")[1]
 			value = formatEC2Tag(instance, key)
-			instance_name = value
+
+			if field == "Tag:Name" {
+				instance_name = value
+			}
+
 		} else {
 			value = formatFuncs[field](client, options, instance)
 		}
 		output = append(output, value)
 	}
+
+	// -Dの指定時に、引数で指定された文字列とインスタンスのtag:nameに合致する対象だけoutputに追記する。
 	if len(options.Domain) == 0 {
 		return strings.Join(output[:], "\t")
 	} else {
@@ -73,7 +79,6 @@ func formatEC2Instance(client *Client, options EC2LsOptions, instance *ec2.Insta
 			return strings.Join(output[:], "")
 		}
 	}
-
 }
 
 func formatEC2InstanceID(client *Client, options EC2LsOptions, instance *ec2.Instance) string {
