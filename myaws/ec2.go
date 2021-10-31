@@ -58,3 +58,21 @@ func buildEC2TagFilter(filterTag string) *ec2.Filter {
 	}
 	return tagFilter
 }
+
+// FindEC2Volumes returns an array of volumes matching the conditions.
+func (client *Client) FindEC2Volumes(filterTag string, all bool) ([]*ec2.Volume, error) {
+	params := &ec2.DescribeVolumesInput{}
+
+	response, err := client.EC2.DescribeVolumes(params)
+	if err != nil {
+		return nil, errors.Wrap(err, "DescribeVolumes failed")
+	}
+
+	var volumes []*ec2.Volume
+
+	for _, volume := range response.Volumes {
+		volumes = append(volumes, volume)
+	}
+
+	return volumes, nil
+}
