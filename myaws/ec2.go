@@ -76,3 +76,21 @@ func (client *Client) FindEC2Volumes(filterTag string, all bool) ([]*ec2.Volume,
 
 	return volumes, nil
 }
+
+// FindEC2Ips returns an array of volumes matching the conditions.
+func (client *Client) FindEC2Ips(filterTag string, all bool) ([]*ec2.Address, error) {
+	params := &ec2.DescribeAddressesInput{}
+
+	response, err := client.EC2.DescribeAddresses(params)
+	if err != nil {
+		return nil, errors.Wrap(err, "DescribeIps failed")
+	}
+
+	var Addresses []*ec2.Address
+
+	for _, Address := range response.Addresses {
+		Addresses = append(Addresses, Address)
+	}
+
+	return Addresses, nil
+}
