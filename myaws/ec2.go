@@ -94,3 +94,21 @@ func (client *Client) FindEC2Ips(filterTag string, all bool) ([]*ec2.Address, er
 
 	return Addresses, nil
 }
+
+// FindEC2Amis returns an array of volumes matching the conditions.
+func (client *Client) FindEC2Amis(filterTag string, all bool) ([]*ec2.Image, error) {
+	params := &ec2.DescribeImagesInput{}
+
+	response, err := client.EC2.DescribeImages(params)
+	if err != nil {
+		return nil, errors.Wrap(err, "DescribeAmis failed")
+	}
+
+	var Images []*ec2.Image
+
+	for _, Image := range response.Images {
+		Images = append(Images, Image)
+	}
+
+	return Images, nil
+}

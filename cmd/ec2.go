@@ -28,6 +28,7 @@ func newEC2Cmd() *cobra.Command {
 		newEC2LsCmd(),
 		newEC2VLsCmd(),
 		newEC2ILsCmd(),
+		newEC2ALsCmd(),
 		newEC2StartCmd(),
 		newEC2StopCmd(),
 		newEC2SSHCmd(),
@@ -36,7 +37,47 @@ func newEC2Cmd() *cobra.Command {
 	return cmd
 }
 
-// 引数未設定
+func newEC2ALsCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "als",
+		Short: "List Images",
+		RunE:  runEC2ALsCmd,
+	}
+
+	flags := cmd.Flags()
+	flags.BoolP("all", "a", false, "List all instances (by default, list running instances only)")
+	flags.BoolP("quiet", "q", false, "Only display InstanceIDs")
+	flags.StringP("filter-tag", "t", "",
+		"Filter instances by tag, such as \"Name:app-production\". The value of tag is assumed to be a partial match",
+	)
+	flags.StringP("fields", "F", "InstanceId InstanceType PublicIpAddress PrivateIpAddress AvailabilityZone StateName LaunchTime Tag:Name Tag:Service 'Tag:In Charge'", "Output fields list separated by space")
+	flags.StringP("domain", "D", "", "Please enter the domain you wish to search")
+	viper.BindPFlag("ec2.als.all", flags.Lookup("all"))
+	viper.BindPFlag("ec2.als.quiet", flags.Lookup("quiet"))
+	viper.BindPFlag("ec2.als.filter-tag", flags.Lookup("filter-tag"))
+	viper.BindPFlag("ec2.als.fields", flags.Lookup("fields"))
+	viper.BindPFlag("ec2.als.domain", flags.Lookup("domain"))
+
+	return cmd
+}
+
+func runEC2ALsCmd(cmd *cobra.Command, args []string) error {
+	client, err := newClient()
+	if err != nil {
+		return errors.Wrap(err, "newClient failed:")
+	}
+
+	options := myaws.EC2ALsOptions{
+		All:       viper.GetBool("ec2.als.all"),
+		Quiet:     viper.GetBool("ec2.als.quiet"),
+		FilterTag: viper.GetString("ec2.als.filter-tag"),
+		Fields:    viper.GetStringSlice("ec2.als.fields"),
+		Domain:    viper.GetStringSlice("ec2.als.domain"),
+	}
+
+	return client.EC2ALs(options)
+}
+
 func newEC2ILsCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "ils",
