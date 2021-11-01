@@ -29,12 +29,54 @@ func newEC2Cmd() *cobra.Command {
 		newEC2VLsCmd(),
 		newEC2ILsCmd(),
 		newEC2ALsCmd(),
+		newEC2SLsCmd(),
 		newEC2StartCmd(),
 		newEC2StopCmd(),
 		newEC2SSHCmd(),
 	)
 
 	return cmd
+}
+
+func newEC2SLsCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "sls",
+		Short: "List Snapshot",
+		RunE:  runEC2SLsCmd,
+	}
+
+	flags := cmd.Flags()
+	flags.BoolP("all", "a", false, "List all instances (by default, list running instances only)")
+	flags.BoolP("quiet", "q", false, "Only display InstanceIDs")
+	flags.StringP("filter-tag", "t", "",
+		"Filter instances by tag, such as \"Name:app-production\". The value of tag is assumed to be a partial match",
+	)
+	flags.StringP("fields", "F", "InstanceId InstanceType PublicIpAddress PrivateIpAddress AvailabilityZone StateName LaunchTime Tag:Name Tag:Service 'Tag:In Charge'", "Output fields list separated by space")
+	flags.StringP("domain", "D", "", "Please enter the domain you wish to search")
+	viper.BindPFlag("ec2.sls.all", flags.Lookup("all"))
+	viper.BindPFlag("ec2.sls.quiet", flags.Lookup("quiet"))
+	viper.BindPFlag("ec2.sls.filter-tag", flags.Lookup("filter-tag"))
+	viper.BindPFlag("ec2.sls.fields", flags.Lookup("fields"))
+	viper.BindPFlag("ec2.sls.domain", flags.Lookup("domain"))
+
+	return cmd
+}
+
+func runEC2SLsCmd(cmd *cobra.Command, args []string) error {
+	client, err := newClient()
+	if err != nil {
+		return errors.Wrap(err, "newClient failed:")
+	}
+
+	options := myaws.EC2SLsOptions{
+		All:       viper.GetBool("ec2.sls.all"),
+		Quiet:     viper.GetBool("ec2.sls.quiet"),
+		FilterTag: viper.GetString("ec2.sls.filter-tag"),
+		Fields:    viper.GetStringSlice("ec2.sls.fields"),
+		Domain:    viper.GetStringSlice("ec2.sls.domain"),
+	}
+
+	return client.EC2SLs(options)
 }
 
 func newEC2ALsCmd() *cobra.Command {

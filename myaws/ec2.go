@@ -112,3 +112,21 @@ func (client *Client) FindEC2Amis(filterTag string, all bool) ([]*ec2.Image, err
 
 	return Images, nil
 }
+
+// FindEC2Snapshots returns an array of volumes matching the conditions.
+func (client *Client) FindEC2Snapshots(filterTag string, all bool) ([]*ec2.Snapshot, error) {
+	params := &ec2.DescribeSnapshotsInput{}
+
+	response, err := client.EC2.DescribeSnapshots(params)
+	if err != nil {
+		return nil, errors.Wrap(err, "DescribeSnapshots failed")
+	}
+
+	var Snapshots []*ec2.Snapshot
+
+	for _, Snapshot := range response.Snapshots {
+		Snapshots = append(Snapshots, Snapshot)
+	}
+
+	return Snapshots, nil
+}
