@@ -25,9 +25,19 @@ func (client *Client) ELBV2Ls() error {
 }
 
 func formatLoadBalancerV2(lb *elbv2.LoadBalancer) string {
+	var a string
+	n := len(lb.AvailabilityZones)
+
 	output := []string{
-		*lb.Type,
 		*lb.LoadBalancerName,
+		*lb.DNSName,
+		*lb.VpcId,
+		*lb.Type,
+	}
+	// LBの振り分け先をoutputに格納、振り分け先のリージョンはVPCの右列に出力させたいがやり方がわからない
+	for i := 0; i < n; i++ {
+		a = *lb.AvailabilityZones[i].ZoneName
+		output = append(output, a)
 	}
 
 	return strings.Join(output[:], "\t")
