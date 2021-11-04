@@ -48,6 +48,7 @@ func formatLoadBalancerV2(lb *elbv2.LoadBalancer) string {
 		a = *lb.AvailabilityZones[i].ZoneName
 		output = append(output, a)
 	}
+	// TODO: -Dで指定されたドメイン名でoutputの中身をフィルターする機能を持たせたい。
 	// a = len(options.Domain)
 	// options.Domain[0]
 	// if regexp.MustCompile(options.Domain[0]).Match([]byte(*lb.LoadBalancerName)) {
