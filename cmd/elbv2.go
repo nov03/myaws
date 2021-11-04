@@ -35,6 +35,7 @@ func newELBV2LsCmd() *cobra.Command {
 		RunE:  runELBV2LsCmd,
 	}
 
+	// NOTE: 引数を渡すロジックが欲しかったため、コード全体をコピーした。fieldsとdomain意外は不要になるはずなので、後で掃除する。
 	flags := cmd.Flags()
 	flags.BoolP("all", "a", false, "List all instances (by default, list running instances only)")
 	flags.BoolP("quiet", "q", false, "Only display InstanceIDs")
