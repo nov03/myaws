@@ -8,8 +8,17 @@ import (
 	"github.com/pkg/errors"
 )
 
+// EC2LsOptions customize the behavior of the Ls command.
+type ELBv2Options struct {
+	All       bool
+	Quiet     bool
+	FilterTag string
+	Fields    []string
+	Domain    []string
+}
+
 // ELBV2Ls describes ELBV2s.
-func (client *Client) ELBV2Ls() error {
+func (client *Client) ELBV2Ls(options ELBv2Options) error {
 	params := &elbv2.DescribeLoadBalancersInput{}
 
 	response, err := client.ELBV2.DescribeLoadBalancers(params)
@@ -39,6 +48,13 @@ func formatLoadBalancerV2(lb *elbv2.LoadBalancer) string {
 		a = *lb.AvailabilityZones[i].ZoneName
 		output = append(output, a)
 	}
-
+	// a = len(options.Domain)
+	// options.Domain[0]
+	// if regexp.MustCompile(options.Domain[0]).Match([]byte(*lb.LoadBalancerName)) {
+	// 	return strings.Join(output[:], "\t")
+	// } else {
+	// 	output = nil
+	// 	return strings.Join(output[:], "")
+	// }
 	return strings.Join(output[:], "\t")
 }
