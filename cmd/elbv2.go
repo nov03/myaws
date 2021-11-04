@@ -23,9 +23,52 @@ func newELBV2Cmd() *cobra.Command {
 	cmd.AddCommand(
 		newELBV2LsCmd(),
 		newELBV2PsCmd(),
+		newELBV2TLsCmd(),
 	)
 
 	return cmd
+}
+
+func newELBV2TLsCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "tls",
+		Short: "List ELBV2 Targets",
+		RunE:  runELBV2TLsCmd,
+	}
+
+	// NOTE: 引数を渡すロジックが欲しかったため、コード全体をコピーした。fieldsとdomain意外は不要になるはずなので、後で掃除する。
+	flags := cmd.Flags()
+	flags.BoolP("all", "a", false, "List all instances (by default, list running instances only)")
+	flags.BoolP("quiet", "q", false, "Only display InstanceIDs")
+	flags.StringP("filter-tag", "t", "",
+		"Filter instances by tag, such as \"Name:app-production\". The value of tag is assumed to be a partial match",
+	)
+	flags.StringP("fields", "F", "InstanceId InstanceType PublicIpAddress PrivateIpAddress AvailabilityZone StateName LaunchTime Tag:Name Tag:Service 'Tag:In Charge'", "Output fields list separated by space")
+	flags.StringP("domain", "D", "", "Please enter the domain you wish to search")
+	viper.BindPFlag("elbv2.tls.all", flags.Lookup("all"))
+	viper.BindPFlag("elbv2.tls.quiet", flags.Lookup("quiet"))
+	viper.BindPFlag("elbv2.tls.filter-tag", flags.Lookup("filter-tag"))
+	viper.BindPFlag("elbv2.tls.fields", flags.Lookup("fields"))
+	viper.BindPFlag("elbv2.tls.domain", flags.Lookup("domain"))
+
+	return cmd
+}
+
+func runELBV2TLsCmd(cmd *cobra.Command, args []string) error {
+	client, err := newClient()
+	if err != nil {
+		return errors.Wrap(err, "newClient failed:")
+	}
+
+	options := myaws.ELBv2TLsOptions{
+		All:       viper.GetBool("elbv2.tls.all"),
+		Quiet:     viper.GetBool("elbv2.tls.quiet"),
+		FilterTag: viper.GetString("elbv2.tls.filter-tag"),
+		Fields:    viper.GetStringSlice("elbv2.tls.fields"),
+		Domain:    viper.GetStringSlice("elbv2.tls.domain"),
+	}
+
+	return client.ELBV2TLs(options)
 }
 
 func newELBV2LsCmd() *cobra.Command {
